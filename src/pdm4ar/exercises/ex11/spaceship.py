@@ -26,7 +26,7 @@ class SpaceshipDyn:
 
         self.x = spy.Matrix(spy.symbols("x y psi vx vy dpsi delta m", real=True))  # states
         self.u = spy.Matrix(spy.symbols("thrust ddelta", real=True))  # inputs
-        self.p = spy.Matrix([spy.symbols('t_f', positive=True)])  # final time
+        self.p = spy.Matrix([spy.symbols("t_f", positive=True)])  # final time
 
         self.n_x = self.x.shape[0]  # number of states
         self.n_u = self.u.shape[0]  # number of inputs
@@ -40,6 +40,17 @@ class SpaceshipDyn:
         """
         # Dynamics
         f = spy.zeros(self.n_x, 1)
+
+        f[0] = self.x[0] * spy.cos(self.x[2]) - self.x[4] * spy.sin(self.x[2])
+        f[1] = self.x[0] * spy.sin(self.x[2]) + self.x[4] * spy.cos(self.x[2])
+        f[2] = self.x[5]
+        f[3] = spy.cos(self.x[6]) * self.u[0] / self.x[7] + self.x[5] * self.x[4]
+        f[4] = spy.sin(self.x[6]) * self.u[0] / self.x[7] - self.x[5] * self.x[3]
+        f[5] = -self.sg.l_r / self.sg.Iz * spy.sin(self.x[6]) * self.u[0]
+        f[6] = self.u[1]
+        f[7] = -self.sp.C_T * self.u[0]
+
+        f = f / self.p[0]
 
         A = f.jacobian(self.x)
         B = f.jacobian(self.u)
